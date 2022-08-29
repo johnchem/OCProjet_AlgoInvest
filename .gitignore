@@ -1,6 +1,7 @@
 # virtual environment
 .venv/
 *.toml
+*.lock
 
 #pycache
 __pycache__/
