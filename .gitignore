@@ -1,0 +1,7 @@
+# virtual environment
+.venv/
+*.toml
+
+#pycache
+__pycache__/
+
