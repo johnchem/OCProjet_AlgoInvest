@@ -1,0 +1,14 @@
+============================= test session starts =============================
+platform win32 -- Python 3.10.5, pytest-7.1.2, pluggy-1.0.0
+rootdir: C:\Users\johnc\Documents\projets\039 - formation OC\07-projet7-AlgoInvest\algoinvest, configfile: pyproject.toml
+collected 4 items / 3 deselected / 1 selected
+
+algoinvest\test_algo.py 
+
+============================== slowest durations ==============================
+
+(1 durations < 0.005s hidden.  Use -vv to show these durations.)
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+C:\Python310\lib\copy.py:134: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+====================== 3 deselected in 732.91s (0:12:12) ======================

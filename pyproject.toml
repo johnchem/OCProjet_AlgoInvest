@@ -7,6 +7,7 @@ authors = ["johnchem <j.payssan@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 pytest = "^7.1.2"
+memory-profiler = "^0.60.0"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^22.6.0", allow-prereleases = true}
@@ -14,3 +15,10 @@ black = {version = "^22.6.0", allow-prereleases = true}
 [build-system]
 requires = ["poetry-core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra --durations=0"
+testpaths = [
+    "test_algo",
+]
