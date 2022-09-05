@@ -30,5 +30,35 @@ def add_share(share, investment):
         output.append(choice_2)
     return output
 
+class Tree:
+    def __init__(self, root = None):
+        self.root=root
+class Node:
+    def __init__(self, v, g=None, d=None):
+        self.g, self.d = g, d
+        self.v = v
+
+    def __repr__(self):
+        return f"{self.v}: {self.g} {self.d}"
+
+def structure_arbre(market):
+    arbre = Tree(Node("root"))
+    previous_rank=[arbre.root]
+    for share in market:
+        tmp_rank = []
+        for node in previous_rank:
+            nd, ng = add_leaves(node, share.name, "")
+            tmp_rank.append(nd)
+            tmp_rank.append(ng)
+            print(previous_rank)
+        previous_rank = tmp_rank
+    return arbre
+
+def add_leaves(node, nd_value, ng_value):
+    node.d = Node(nd_value)
+    node.g = Node(ng_value)
+    return node.d, node.g
+
+
 if __name__ == '__main__':
-    logging.debug('putain de fichier')
+    pass

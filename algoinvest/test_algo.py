@@ -1,9 +1,8 @@
-from bruteforce import brute_force
+from bruteforce import brute_force, structure_arbre
 from optimized import optimized
 
 from pathlib import Path
 from collections import namedtuple
-import logging
 import pytest
 import csv
 
@@ -47,6 +46,18 @@ def test_optimized_set_2(dataset_2, control_set_2):
 """
 define the fixture
 """
+
+def dataset_0():
+    FILE_NAME = DATA_SET_FOLDER/'dataset_0.csv'
+    
+    share = namedtuple('share',('name', 'value', 'roi'))
+    with open(FILE_NAME, newline='') as f:
+        reader = csv.reader(f, delimiter= ',')
+        next(reader) #skip the 1st line
+        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
+    return testing_data
+
+
 @pytest.fixture
 def dataset_1():
     FILE_NAME = DATA_SET_FOLDER/'dataset1_Python+P7.csv'
@@ -96,6 +107,6 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
-    output = dataset_1()
-    print(*dataset_1().items(), sep="\n")
+    data_set = dataset_0()
+    structure_arbre(data_set[:5])
     
