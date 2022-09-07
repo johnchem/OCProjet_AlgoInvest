@@ -1,3 +1,4 @@
+from algoinvest.bruteforce import brute_force_matrice
 from bruteforce import brute_force, structure_arbre
 from optimized import optimized
 
@@ -10,12 +11,11 @@ import csv
 DATA_SET_FOLDER = Path("algoinvest/dataset")
 
 def test_bruteforce_set_1(dataset_1, control_set_1):
-    analysis = brute_force(dataset_1[:20])
-    shares = analysis["shares"]
+    analysis = brute_force_matrice(dataset_1)
+    # shares = analysis["shares"]
     cost = analysis["cost"]
     roi = analysis["roi"]
 
-    assert all(s in control_set_1 for s in shares)
     assert cost <= control_set_1['cost']
     assert roi >= control_set_1['roi']
 
@@ -108,5 +108,4 @@ def control_set_2():
 
 if __name__ == "__main__":
     data_set = dataset_0()
-    structure_arbre(data_set[:5])
-    
+    brute_force_matrice(data_set)   
