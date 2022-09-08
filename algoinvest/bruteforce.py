@@ -70,6 +70,7 @@ def generate_matrix(size):
 
 def brute_force_matrice(market):
     matrice = generate_matrix(len(market))
+    print(*matrice, sep="\n")
     liste_action = market
     roi_max = 0
     best_investment = []
@@ -77,13 +78,13 @@ def brute_force_matrice(market):
         investment = [action for buy, action in zip(row, liste_action) if buy == 1]
         cost = sum([int(price) for action, price, roi in investment])
         if cost<500:
-            total_roi = sum(roi for *_, roi in investment)
+            total_roi = sum(roi*price/100 for action, price, roi in investment)
             if total_roi>roi_max:
                 roi_max = total_roi
                 total_cost = cost
                 best_investment = [action for action, *_ in investment]
-    print(f"bénéfice maximal {roi_max}")
-    print(f"coût de l'achat {total_cost}")
+    print(f"benefice maximal {roi_max}")
+    print(f"cout de l'achat {total_cost}")
     return best_investment
 
 if __name__ == '__main__':
