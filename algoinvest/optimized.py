@@ -1,18 +1,96 @@
 from collections import namedtuple
+from math import floor
 
 def optimized():
     pass
 
 # methode separation et evaluation Horowitz et sahni
 def horowitz_sahni_algo(market, capacity):
-    best_solution = []
-    current_solution = []
-    residual_capacity = capacity
-    next_item = ""
-    next_weight = ""
-    n = 1
-    pass
+    def initialise():
+        best_solution = {'gain':0 ,'path':[None]*len(market)}
+        current_solution = {'gain':0 ,'path':[None]*len(market)}
+        residual_capacity = capacity
+        index = 0
+        return best_solution, current_solution, residual_capacity, index
+    
+    def get_critical_point():
+        critical_point = {'index':index, 'value':0}
+        while critical_point['value'] < residual_capacity:
+            critical_point['value'] += market[critical_point['index']].value
+            critical_point['index'] += 1
+        critical_point['index'] += 1
+        return critical_point
+    
+    def get_upper_bound():
+        critical_point = get_critical_point()
+        gain_at_critical_point = sum([market[j].roi+market[j].value for j in range(index, critical_point['index'])]) 
+        weight_at_critical_point = sum([market[j].value for j in range(index, critical_point['index'])])
+        critical_point_balance = market[critical_point['index']].roi/market[critical_point['index']].value
+        upper_bound = (gain_at_critical_point + 
+                       floor((residual_capacity - weight_at_critical_point)*
+                              critical_point_balance)
+                      )
+        print(f'current exploration {current_solution["path"]}')
+        if best_solution['gain'] >= current_solution['gain'] + upper_bound:
+            start_backtrack()
+        start_forward()
 
+    def update_best_solution():
+        nonlocal residual_capacity
+        nonlocal current_solution
+        nonlocal best_solution
+        nonlocal index
+        best_solution = current_solution.copy()
+        index = len(market)
+        if current_solution['path'][index]:
+            residual_capacity += market[index].value
+            current_solution['gain'] -= market[index].roi*market[index].value
+            current_solution['path'][index] = 0
+        start_backtrack()
+
+    def start_forward():
+        nonlocal residual_capacity
+        nonlocal current_solution
+        nonlocal index
+        while market[index].value <= residual_capacity:
+            residual_capacity -= market[index].value
+            current_solution['gain'] += market[index].roi*market[index].value
+            current_solution['path'][index]=1
+            index += 1
+            if index >= len(market): 
+                break
+        if index < len(market):
+            current_solution['path'][index] = 0
+            index += 1
+        if index < len(market)-1:
+            get_upper_bound()
+        if index == len(market):
+            start_forward()
+    
+    def start_backtrack():
+        nonlocal current_solution
+        nonlocal residual_capacity
+        nonlocal index
+        backtrack_index = max([(i,x) for i,x in enumerate(current_solution['path']) if x==1])
+        if not backtrack_index:
+            return None
+        
+        residual_capacity += market[index].value
+        current_solution['gain'] -= market[index].roi*market[index].value
+        current_solution['path'][index]=0
+        index = backtrack_index + 1
+        get_upper_bound()
+            
+    best_solution, current_solution, residual_capacity, index = initialise()
+    market.sort(key=lambda x : x.roi*x.value, reverse=True)
+    
+    get_upper_bound()
+    start_forward()
+    update_best_solution()
+    start_backtrack()
+    
+    return best_solution
+        
 def compute_upper_bound():
     pass
 
@@ -22,8 +100,8 @@ def branch_and_bound(market, capacity):
     market.sort(key=lambda x : x.roi, reverse=True)
     
     queue = []
-    dummy_node = node(index=-1, gain=0, bound=0, weight=0)
-    next_node = node(index="", gain="", bound="", weight="")
+    dummy_node = {"index":-1, "gain":0, "bound":0, "weight":0}
+    next_node = {"index":"", "gain":"", "bound": "", "weight":""}
     queue.append(dummy_node)
 
     max_roi = 0
@@ -32,55 +110,55 @@ def branch_and_bound(market, capacity):
         # sort un noeud de la file
         node_ref=queue[0]
         queue.pop(0)
+        print(f"index : {index}")
+        print(f'queue begin: {queue}')
 
         # si le 1er noeud_ref est le dummy_node
         # le next_node prend le niveau 0
-        if node_ref.index == -1:
-            next_node.index = 0
+        if node_ref["index"] == -1:
+            next_node["index"] = 0
         
         # change de noeud de reference si l'ensemble de la liste 
         # a ete parcouru
-        if node_ref.index == index-1:
+        if node_ref["index"] == index-1:
             continue
 
         # ajoute le noeud a la serie
-        next_node.index = node_ref.index+1
-        next_node.weight = node_ref.weight + market[next_node.index].weight
-        next_node.gain = node_ref.gain + market[next_node.index].value
+        next_node["index"] = node_ref["index"]+1
+        next_node["weight"] = node_ref["weight"] + market[next_node["index"]].value
+        next_node["gain"] = node_ref["gain"] + market[next_node["index"]].roi
 
         # met a jour le montant max si les conditions sont respecte
-        if next_node.weight <= capacity and next_node.gain > max_roi:
-            max_roi = next_node.gain
+        if next_node["weight"] <= capacity and next_node["gain"] > max_roi:
+            max_roi = next_node["gain"]
         
         # calcule la valeur maximal possible de la branche
-        next_node.bound = bound(next_node, len(market), capacity, market)
+        next_node["bound"] = bound(next_node, capacity, market)
         
         # si les gains sont plus important ajout le noeud à la liste 
-        if next_node.bound > max_roi:
+        if next_node["bound"] > max_roi:
             queue.append(next_node)
+        print(f'queue end {queue}')
     return max_roi
 
 def bound(node, capacity, market):
-    if node.weight >= capacity:
+    if node["weight"] >= capacity:
         return 0
     
-    bound = node.gain
-    index = node.index+1
-    total_weight = node.weight
+    bound = node["gain"]
+    index = node["index"]+1
+    total_weight = node["weight"]
 
     # parcourd la liste et ajoute chaque noeud qui respect les conditions
-    while index <= len(market) and (total_weight + market[index].weight <= capacity):
-        total_weight += market[index].weight
-        bound += market[index].value
+    while index <= len(market) and (total_weight + market[index].value <= capacity):
+        total_weight += market[index].value
+        bound += market[index].roi
         index+=1
 
     if index < len(market):
-        bound += (capacity - total_weight)*market[index].value/market[index].weight
+        bound += (capacity - total_weight)*market[index].roi/market[index].value
 
     return bound 
     
-
-    
-
 if __name__ == '__main__':
     pass

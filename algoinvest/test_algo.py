@@ -1,5 +1,5 @@
 from algoinvest.bruteforce import brute_force_matrice
-from algoinvest.optimized import branch_and_bound
+from algoinvest.optimized import branch_and_bound, horowitz_sahni_algo
 from bruteforce import brute_force, structure_arbre
 from optimized import optimized
 
@@ -57,6 +57,17 @@ def dataset_0():
         testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
     return testing_data
 
+def dataset_0_bis():
+    FILE_NAME = DATA_SET_FOLDER/'dataset_0_bis.csv'
+    
+    share = namedtuple('share',('name', 'value', 'roi'))
+    with open(FILE_NAME, newline='') as f:
+        reader = csv.reader(f, delimiter= ',')
+        next(reader) #skip the 1st line
+        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
+    return testing_data
+
+
 
 @pytest.fixture
 def dataset_1():
@@ -107,5 +118,7 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
-    data_set = dataset_0()
-    branch_and_bound(data_set, 500)   
+    data_set = dataset_0_bis()
+    #print(branch_and_bound(data_set, 500))  
+
+    print(horowitz_sahni_algo(data_set,50))
