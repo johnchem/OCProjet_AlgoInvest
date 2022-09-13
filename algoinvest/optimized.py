@@ -18,18 +18,22 @@ def horowitz_sahni_algo(market, capacity):
         while critical_point['value'] < residual_capacity:
             critical_point['value'] += market[critical_point['index']].value
             critical_point['index'] += 1
-        critical_point['index'] += 1
         return critical_point
     
     def get_upper_bound():
         critical_point = get_critical_point()
-        gain_at_critical_point = sum([market[j].roi+market[j].value for j in range(index, critical_point['index'])]) 
-        weight_at_critical_point = sum([market[j].value for j in range(index, critical_point['index'])])
-        critical_point_balance = market[critical_point['index']].roi/market[critical_point['index']].value
-        upper_bound = (gain_at_critical_point + 
-                       floor((residual_capacity - weight_at_critical_point)*
-                              critical_point_balance)
-                      )
+        if critical_point['index'] > len(market):
+            upper_bound = sum([market[j].roi*market[j].value for j in range(index, critical_point['index'])])
+
+        else:
+            print("stop")
+            gain_at_critical_point = sum([market[j].roi*market[j].value for j in range(index, critical_point['index'])]) 
+            weight_at_critical_point = sum([market[j].value for j in range(index, critical_point['index'])])
+            critical_point_balance = market[critical_point['index']].roi/market[critical_point['index']].value
+            upper_bound = (gain_at_critical_point + 
+                          floor((residual_capacity - weight_at_critical_point)*
+                                 critical_point_balance)
+                           )
         print(f'current exploration {current_solution["path"]}')
         if best_solution['gain'] >= current_solution['gain'] + upper_bound:
             start_backtrack()
@@ -82,7 +86,7 @@ def horowitz_sahni_algo(market, capacity):
         get_upper_bound()
             
     best_solution, current_solution, residual_capacity, index = initialise()
-    market.sort(key=lambda x : x.roi*x.value, reverse=True)
+    # market.sort(key=lambda x : x.roi*x.value, reverse=True)
     
     get_upper_bound()
     start_forward()
