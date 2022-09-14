@@ -14,30 +14,37 @@ def horowitz_sahni_algo(market, capacity):
         return best_solution, current_solution, residual_capacity, index
     
     def get_critical_point():
-        critical_point = {'index':index, 'value':0}
+        critical_point = {'index':index-1, 'value':0}
         while critical_point['value'] < residual_capacity:
-            critical_point['value'] += market[critical_point['index']].value
             critical_point['index'] += 1
+            critical_point['value'] += market[critical_point['index']].value
+            
+        print(f'critical point {critical_point}')
         return critical_point
     
     def get_upper_bound():
+        nonlocal node_i
+        print(f'\nnode {node_i}')
+        node_i += 1
+
         critical_point = get_critical_point()
-        if critical_point['index'] > len(market):
-            upper_bound = sum([market[j].roi*market[j].value for j in range(index, critical_point['index'])])
+        if critical_point['index'] > len(market)-1:
+            upper_bound = sum([market[j].roi*market[j].value for j in range(index, critical_point['index']+1)])
 
         else:
-            print("stop")
             gain_at_critical_point = sum([market[j].roi*market[j].value for j in range(index, critical_point['index'])]) 
             weight_at_critical_point = sum([market[j].value for j in range(index, critical_point['index'])])
-            critical_point_balance = market[critical_point['index']].roi/market[critical_point['index']].value
+            critical_point_balance = market[critical_point['index']].roi*market[critical_point['index']].value/market[critical_point['index']].value
             upper_bound = (gain_at_critical_point + 
                           floor((residual_capacity - weight_at_critical_point)*
                                  critical_point_balance)
                            )
         print(f'current exploration {current_solution["path"]}')
+        print(f'upper bound {upper_bound}')
         if best_solution['gain'] >= current_solution['gain'] + upper_bound:
             start_backtrack()
         start_forward()
+        return
 
     def update_best_solution():
         nonlocal residual_capacity
@@ -51,8 +58,10 @@ def horowitz_sahni_algo(market, capacity):
             current_solution['gain'] -= market[index].roi*market[index].value
             current_solution['path'][index] = 0
         start_backtrack()
+        return
 
     def start_forward():
+        nonlocal node_i
         nonlocal residual_capacity
         nonlocal current_solution
         nonlocal index
@@ -60,16 +69,24 @@ def horowitz_sahni_algo(market, capacity):
             residual_capacity -= market[index].value
             current_solution['gain'] += market[index].roi*market[index].value
             current_solution['path'][index]=1
+
+            print(f'\nnode {node_i}')
+            node_i += 1
+
+            print(f'current exploration {current_solution["path"]}')
+            print(f'residual {residual_capacity}')
             index += 1
             if index >= len(market): 
                 break
-        if index < len(market):
+        if index <= len(market)-1:
             current_solution['path'][index] = 0
             index += 1
         if index < len(market)-1:
             get_upper_bound()
-        if index == len(market):
+        if index == len(market)-1:
             start_forward()
+        return 
+
     
     def start_backtrack():
         nonlocal current_solution
@@ -84,6 +101,9 @@ def horowitz_sahni_algo(market, capacity):
         current_solution['path'][index]=0
         index = backtrack_index + 1
         get_upper_bound()
+        return
+    
+    node_i = 0
             
     best_solution, current_solution, residual_capacity, index = initialise()
     # market.sort(key=lambda x : x.roi*x.value, reverse=True)
@@ -95,12 +115,7 @@ def horowitz_sahni_algo(market, capacity):
     
     return best_solution
         
-def compute_upper_bound():
-    pass
-
 def branch_and_bound(market, capacity):
-    node = namedtuple('node',('index', 'gain', 'bound', 'weight'))
-    
     market.sort(key=lambda x : x.roi, reverse=True)
     
     queue = []
