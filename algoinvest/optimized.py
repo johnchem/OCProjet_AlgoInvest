@@ -17,15 +17,12 @@ def horowitz_sahni_algo(market, capacity):
         critical_point = {'index':index-1, 'value':0}
         while critical_point['value'] < residual_capacity:
             critical_point['index'] += 1
+            if critical_point['index'] >= len(market):break
             critical_point['value'] += market[critical_point['index']].value
-            
-        print(f'critical point {critical_point}')
         return critical_point
     
     def get_upper_bound():
         nonlocal node_i
-        print(f'\nnode {node_i}')
-        node_i += 1
 
         critical_point = get_critical_point()
         if critical_point['index'] > len(market)-1:
@@ -39,10 +36,15 @@ def horowitz_sahni_algo(market, capacity):
                           floor((residual_capacity - weight_at_critical_point)*
                                  critical_point_balance)
                            )
-        print(f'current exploration {current_solution["path"]}')
-        print(f'upper bound {upper_bound}')
+        create_node({'current exploration':current_solution["path"],
+                     'critical point':critical_point,
+                     'upper bound':upper_bound})
+        # print(f'critical point {critical_point}')
+        # print(f'upper bound {upper_bound}')
+        
         if best_solution['gain'] >= current_solution['gain'] + upper_bound:
             start_backtrack()
+            return
         start_forward()
         return
 
@@ -51,12 +53,24 @@ def horowitz_sahni_algo(market, capacity):
         nonlocal current_solution
         nonlocal best_solution
         nonlocal index
-        best_solution = current_solution.copy()
-        index = len(market)
-        if current_solution['path'][index]:
-            residual_capacity += market[index].value
-            current_solution['gain'] -= market[index].roi*market[index].value
-            current_solution['path'][index] = 0
+        nonlocal node_i
+
+        create_node({'current exploration':current_solution["path"], 
+                     'current gain':round(current_solution["gain"])}
+                    )
+        # print(f'current gain {round(current_solution["gain"])}')
+        if current_solution ['gain'] > best_solution['gain']:
+            best_solution = current_solution.copy()
+        
+        # reinitialisation de l'index
+        index = len(market)-1
+
+        # si le dernier objet est mis dans le sac, mise a jour de la valeur 
+        # et passage dans path[-1] == 0 pour permettre le back-tracking
+        if current_solution['path'][-1]:
+            residual_capacity += market[-1].value
+            current_solution['gain'] -= market[-1].roi*market[-1].value
+            current_solution['path'][-1] = 0
         start_backtrack()
         return
 
@@ -70,11 +84,10 @@ def horowitz_sahni_algo(market, capacity):
             current_solution['gain'] += market[index].roi*market[index].value
             current_solution['path'][index]=1
 
-            print(f'\nnode {node_i}')
-            node_i += 1
+            create_node({'current exploration':current_solution["path"], 
+                         'residual':residual_capacity}
+                        )
 
-            print(f'current exploration {current_solution["path"]}')
-            print(f'residual {residual_capacity}')
             index += 1
             if index >= len(market): 
                 break
@@ -83,8 +96,11 @@ def horowitz_sahni_algo(market, capacity):
             index += 1
         if index < len(market)-1:
             get_upper_bound()
+            return
         if index == len(market)-1:
             start_forward()
+            return
+        update_best_solution()
         return 
 
     
@@ -92,17 +108,29 @@ def horowitz_sahni_algo(market, capacity):
         nonlocal current_solution
         nonlocal residual_capacity
         nonlocal index
-        backtrack_index = max([(i,x) for i,x in enumerate(current_solution['path']) if x==1])
+
+        backtrack_index = max([i for i,x in enumerate(current_solution['path']) if x==1])
         if not backtrack_index:
             return None
         
-        residual_capacity += market[index].value
-        current_solution['gain'] -= market[index].roi*market[index].value
-        current_solution['path'][index]=0
+        residual_capacity += market[backtrack_index].value
+        current_solution['gain'] -= market[backtrack_index].roi*market[backtrack_index].value
+        # set the node to explore with a value None
+        current_solution['path'][backtrack_index:]=[None]*(len(current_solution["path"])-backtrack_index)
+        # force the current node to 0
+        current_solution['path'][backtrack_index]=0
         index = backtrack_index + 1
         get_upper_bound()
         return
-    
+
+    def create_node(infos):
+        nonlocal node_i
+        
+        print(f'\nnode {node_i}')
+        node_i += 1
+        for name, info in infos.items():
+            print(f'{name} {info}')
+
     node_i = 0
             
     best_solution, current_solution, residual_capacity, index = initialise()
