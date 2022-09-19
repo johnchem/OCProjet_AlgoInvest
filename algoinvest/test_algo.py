@@ -12,7 +12,7 @@ import csv
 DATA_SET_FOLDER = Path("algoinvest/dataset")
 
 def test_bruteforce_set_1(dataset_1, control_set_1):
-    analysis = brute_force_matrice(dataset_1[:20])
+    analysis = brute_force_matrice(dataset_1)
     # shares = analysis["shares"]
     cost = analysis["cost"]
     roi = analysis["roi"]
@@ -54,7 +54,7 @@ def dataset_0():
     with open(FILE_NAME, newline='') as f:
         reader = csv.reader(f, delimiter= ',')
         next(reader) #skip the 1st line
-        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
+        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)/100) for name, value, roi in reader if float(value)>0]
     return testing_data
 
 def dataset_0_bis():
@@ -64,12 +64,12 @@ def dataset_0_bis():
     with open(FILE_NAME, newline='') as f:
         reader = csv.reader(f, delimiter= ',')
         next(reader) #skip the 1st line
-        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
+        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)/100) for name, value, roi in reader if float(value)>0]
     return testing_data
 
 
 
-@pytest.fixture
+# @pytest.fixture
 def dataset_1():
     FILE_NAME = DATA_SET_FOLDER/'dataset1_Python+P7.csv'
     
@@ -93,7 +93,7 @@ def dataset_2():
     return control_data
 
 
-@pytest.fixture
+# @pytest.fixture
 def control_set_1():
     FILE_NAME = DATA_SET_FOLDER/'control_dataset1.csv'
 
@@ -119,6 +119,11 @@ def control_set_2():
 
 if __name__ == "__main__":
     data_set = dataset_0_bis()
-    #print(branch_and_bound(data_set, 500))  
+    data_set_0 = dataset_0()
+    data_set_1 = dataset_1()
+    
+    # print(brute_force_matrice(data_set_0))
+    sort_fct = lambda x: x.roi*x.roi*x.roi*x.value
+    print(horowitz_sahni_algo(data_set_0,500, sort_fct))
+    print(horowitz_sahni_algo(data_set_1,500, sort_fct))
 
-    print(horowitz_sahni_algo(data_set,50))

@@ -6,7 +6,7 @@ def optimized():
     pass
 
 # methode separation et evaluation Horowitz et sahni
-def horowitz_sahni_algo(market, capacity):
+def horowitz_sahni_algo(market, capacity, sort_fct, verbose=False):
     def initialise():
         best_solution = {'gain':0 ,'path':[None]*nb_items}
         current_solution = {'gain':0 ,'path':[None]*nb_items}
@@ -46,11 +46,10 @@ def horowitz_sahni_algo(market, capacity):
                                 floor((residual_capacity - weight_at_critical_point)*
                                        critical_point_balance)
                           )
-        create_node({'current exploration':current_solution["path"],
-                     'critical point':critical_point,
-                     'upper bound':upper_bound})
-        # print(f'critical point {critical_point}')
-        # print(f'upper bound {upper_bound}')
+        if not verbose:
+            create_node({'current exploration':current_solution["path"],
+                        'critical point':critical_point,
+                        'upper bound':upper_bound})
         
         if best_solution['gain'] >= current_solution['gain'] + upper_bound:
             return start_backtrack()
@@ -69,9 +68,10 @@ def horowitz_sahni_algo(market, capacity):
 
             if index >= nb_items: 
                 break
-            create_node({'current exploration':current_solution["path"], 
-                         'residual':residual_capacity}
-                        )
+            if not verbose:
+                create_node({'current exploration':current_solution["path"], 
+                            'residual':residual_capacity}
+                            )
         
         # reject l'object si il ne rentre pas dans le sac
         if index <= nb_items-1:
@@ -94,10 +94,11 @@ def horowitz_sahni_algo(market, capacity):
         nonlocal best_solution
         nonlocal index
 
-        create_node({'current exploration':current_solution["path"], 
-                     'current gain':round(current_solution["gain"])}
-                    )
-        # print(f'current gain {round(current_solution["gain"])}')
+        if not verbose:
+            create_node({'current exploration':current_solution["path"], 
+                        'current gain':round(current_solution["gain"])}
+                        )
+        
         if current_solution ['gain'] > best_solution['gain']:
             best_solution = copy.deepcopy(current_solution)
         
@@ -143,10 +144,10 @@ def horowitz_sahni_algo(market, capacity):
     nb_items = len(market)
             
     best_solution, current_solution, residual_capacity, index = initialise()
-    # market.sort(key=lambda x : x.roi*x.value, reverse=True)
+    market.sort(key=sort_fct, reverse=True)
     
     get_upper_bound()
-    
+    best_solution['path'] = [name for name, *_, choose in zip(market,best_solution["path"]) if choose == 1]
     return best_solution
         
 def branch_and_bound(market, capacity):

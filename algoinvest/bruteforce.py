@@ -77,7 +77,7 @@ def brute_force_matrice(market):
         investment = [action for buy, action in zip(row, liste_action) if buy == 1]
         cost = sum([int(price) for action, price, roi in investment])
         if cost<500:
-            total_roi = sum(roi*price/100 for action, price, roi in investment)
+            total_roi = sum(roi*price for action, price, roi in investment)
             if total_roi>roi_max:
                 roi_max = total_roi
                 total_cost = cost
