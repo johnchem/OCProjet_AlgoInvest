@@ -117,6 +117,8 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
+    import sys
+    sys.setrecursionlimit(10000)
     data_set = dataset_0()
     #print(branch_and_bound(data_set, 500))  
 
@@ -127,7 +129,7 @@ if __name__ == "__main__":
     step_forward = opti.StepForwardHandler()
     best_solution = opti.UpdateSolutionHandler()
     back_track = opti.BackTrackHandler()
-    upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track)
+    upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track).set_next(step_forward)
     upper_bound.set_branch(back_track)
     step_forward.set_branch(upper_bound)
     step_forward.set_branch_2(step_forward)

@@ -3,6 +3,17 @@ from dataclasses import dataclass
 from math import floor
 import copy
 
+def create_node():
+    node_nb = 0
+    def print_node(infos):
+        print(f'\nnode {node_nb}')
+        node_nb += 1
+        for name, info in infos.items():
+            print(f'{name} {info}')
+    return print_node
+
+node = create_node()
+
 class Handler(ABC):
     @abstractmethod
     def set_next(self, handler):
@@ -64,16 +75,16 @@ class UpperBoundhandler(AbstractHandler):
                                 floor((knap.res_capacity - weight_at_critical_point)*
                                        critical_point_balance)
                           )
-        node({'current exploration':knap.current_sol["path"],
-                     'critical point':critical_point,
-                     'upper bound':upper_bound})
+        # node({'current exploration':knap.current_sol["path"],
+        #              'critical point':critical_point,
+        #              'upper bound':upper_bound})
+
         # print(f'critical point {critical_point}')
         # print(f'upper bound {upper_bound}')
-        
         if knap.best_sol['gain'] >= knap.current_sol['gain'] + upper_bound:
-            return self._branch_handler.handler(knap)
+            return self._branch_handler.handle(knap)
         else:
-            return self._next_handler.handler(knap)
+            return self._next_handler.handle(knap)
 
 
 class StepForwardHandler(AbstractHandler):
@@ -89,39 +100,39 @@ class StepForwardHandler(AbstractHandler):
         return None
 
     def handle(self, knap):
-        while knap.items[knap.i].value <= knap.residual_cap:
-            knap.residual_cap -= knap.items[knap.i].value
-            knap.residual_cap['gain'] += knap.items[knap.i].roi*knap.items[knap.i].value
-            knap.residual_cap['path'][knap.i]=1
+        while knap.items[knap.i].value <= knap.res_capacity:
+            knap.res_capacity -= knap.items[knap.i].value
+            knap.current_sol['gain'] += knap.items[knap.i].roi*knap.items[knap.i].value
+            knap.current_sol['path'][knap.i]=1
             knap.i += 1
 
             if knap.i >= knap.n: 
                 break
-            node({'current exploration':knap.current_sol["path"], 
-                         'residual':knap.res_capacity}
-                       )
+            # node({'current exploration':knap.current_sol["path"], 
+            #              'residual':knap.res_capacity}
+            #            )
             
-            # reject l'object si il ne rentre pas dans le sac
-            if knap.i <= knap.n-1:
-                knap.current_sol['path'][knap.i] = 0
-                knap.i += 1
+        # reject l'object si il ne rentre pas dans le sac
+        if knap.i <= knap.n-1:
+            knap.current_sol['path'][knap.i] = 0
+            knap.i += 1
             
-            # si l'object ne rentre dans le sac : 
-            # - evaluation of the node with upper_bound
-            if knap.i <= knap.n-1:
-                return self._branch_handler.handle(knap)
-            # - add or reject the item through the start_forward evaluation
-            if knap.i == knap.n-1:
-                return self._branch_handler_2(knap)
-            # when all the items have been evaluated => update_best_solution 
-            return self._next_handler(knap)
+        # si l'object ne rentre dans le sac : 
+        # - evaluation of the node with upper_bound
+        if knap.i <= knap.n-1:
+            return self._branch_handler.handle(knap)
+        # - add or reject the item through the start_forward evaluation
+        if knap.i == knap.n-1:
+            return self._branch_handler_2.handle(knap)
+        # when all the items have been evaluated => update_best_solution 
+        return self._next_handler.handle(knap)
 
 
 class UpdateSolutionHandler(AbstractHandler):
     def handle(self, knap):
-        node({'current exploration':knap.current_sol["path"], 
-                     'current gain':round(knap.current_sol["gain"])}
-                    )
+        # node({'current exploration':knap.current_sol["path"], 
+        #              'current gain':round(knap.current_sol["gain"])}
+        #             )
         # print(f'current gain {round(current_solution["gain"])}')
         if knap.current_sol ['gain'] > knap.best_sol['gain']:
             knap.best_sol = copy.deepcopy(knap.current_sol)
@@ -135,7 +146,7 @@ class UpdateSolutionHandler(AbstractHandler):
             knap.res_capacity += knap.items[-1].value
             knap.current_sol['gain'] -= knap.items[-1].roi*knap.items[-1].value
             knap.current_sol['path'][-1] = 0
-        return self._next_handler.handler(knap)
+        return self._next_handler.handle(knap)
 
 
 class BackTrackHandler(AbstractHandler):
@@ -143,7 +154,8 @@ class BackTrackHandler(AbstractHandler):
         backtrack_index = max([i for i,x in enumerate(knap.current_sol['path']) if x==1])
         if not backtrack_index:
             return knap.best_sol
-        
+        print(f'backtrack_index {backtrack_index}')
+        print(f'path {knap.current_sol["path"]} \n')
         # take back the last items put in the bag
         knap.res_capacity += knap.items[backtrack_index].value
         knap.current_sol['gain'] -= knap.items[backtrack_index].roi*knap.items[backtrack_index].value
@@ -152,7 +164,7 @@ class BackTrackHandler(AbstractHandler):
         # force the current node to 0
         knap.current_sol['path'][backtrack_index]=0
         knap.i = backtrack_index + 1
-        return self._next_handler.handler(knap)
+        return self._next_handler.handle(knap)
 
 
 @dataclass
@@ -178,18 +190,6 @@ def knapsack_H_S(items, capacity, sort_fct):
 
     knapsack = Knapsack(items, capacity, sort_fct)
     return solve_knapsack
-
-def create_node():
-    def print_node(infos):
-        print(f'\nnode {node_nb}')
-        node_nb += 1
-        for name, info in infos.items():
-            print(f'{name} {info}')
-        return
-    node_nb = 0
-    return print_node
-
-node = create_node()
 
 
 # methode separation et evaluation Horowitz et sahni
