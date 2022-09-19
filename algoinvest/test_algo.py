@@ -1,7 +1,8 @@
+from pickletools import optimize
 from algoinvest.bruteforce import brute_force_matrice
-from algoinvest.optimized import branch_and_bound, horowitz_sahni_algo
+from algoinvest.optimized import branch_and_bound, horowitz_sahni_algo, knapsack_H_S
 from bruteforce import brute_force, structure_arbre
-from optimized import optimized
+import algoinvest.optimized as opti
 
 from pathlib import Path
 from collections import namedtuple
@@ -20,7 +21,6 @@ def test_bruteforce_set_1(dataset_1, control_set_1):
     assert cost <= control_set_1['cost']
     assert roi >= control_set_1['roi']
 
-
 def test_bruteforce_set_2(dataset_2, control_set_2):
     shares, cost, roi = brute_force(dataset_2)
 
@@ -33,7 +33,6 @@ def test_branch_and_bound_set_1(dataset_1, control_set_1):
     
     assert cost <= control_set_1['cost']
     assert roi >= control_set_1['roi']
-
 
 def test_optimized_set_2(dataset_2, control_set_2):
     shares, cost, roi = optimized(dataset_2)
@@ -118,7 +117,21 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
-    data_set = dataset_0_bis()
+    data_set = dataset_0()
     #print(branch_and_bound(data_set, 500))  
 
-    print(horowitz_sahni_algo(data_set,50))
+    sort_fct = lambda x : x.roi*x.value
+    knapsack = knapsack_H_S(data_set, 500, sort_fct)
+    
+    upper_bound = opti.UpperBoundhandler()
+    step_forward = opti.StepForwardHandler()
+    best_solution = opti.UpdateSolutionHandler()
+    back_track = opti.BackTrackHandler()
+    upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track)
+    upper_bound.set_branch(back_track)
+    step_forward.set_branch(upper_bound)
+    step_forward.set_branch_2(step_forward)
+    back_track.set_branch(step_forward)
+
+    print(knapsack(upper_bound))
+    # print(horowitz_sahni_algo(data_set,50))
