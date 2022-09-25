@@ -1,7 +1,8 @@
 from pickletools import optimize
 from algoinvest.bruteforce import brute_force_matrice
-from algoinvest.optimized import branch_and_bound, horowitz_sahni_algo, knapsack_H_S
-from bruteforce import brute_force, structure_arbre
+from algoinvest.optimized import knapsack_H_S, Knapsack
+from algoinvest.branch_and_bound import branch_and_bound
+from bruteforce import brute_force
 import algoinvest.optimized as opti
 
 from pathlib import Path
@@ -53,7 +54,7 @@ def dataset_0():
     with open(FILE_NAME, newline='') as f:
         reader = csv.reader(f, delimiter= ',')
         next(reader) #skip the 1st line
-        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)) for name, value, roi in reader if float(value)>0]
+        testing_data = [share(name=name.strip(),value=float(value),roi=float(roi)/100) for name, value, roi in reader if float(value)>0]
     return testing_data
 
 def dataset_0_bis():
@@ -117,23 +118,38 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
-    import sys
-    sys.setrecursionlimit(10000)
+    # import sys
+    # sys.setrecursionlimit(1000000)
     data_set = dataset_0()
     #print(branch_and_bound(data_set, 500))  
+    n = len(data_set)
+    capacity = 50
+    value = [x.value for x in data_set]
+    roi = [x.roi*x.value/100 for x in data_set]
+    p_per_weight = [x.roi*x.value/x.value for x in data_set]
 
-    sort_fct = lambda x : x.roi*x.value
-    knapsack = knapsack_H_S(data_set, 500, sort_fct)
+    print(branch_and_bound(n, value, roi, capacity, p_per_weight))
+
+    # sort_fct_1 = lambda x : x.roi*x.roi*x.value
+    # # knapsack_1 = knapsack_H_S(data_set, 500, sort_fct_1)
+    # bag = Knapsack(data_set, 500, sort_fct_1)
+
+    # # sort_fct_2 = lambda x : x.roi*x.value
+    # # knapsack_2 = knapsack_H_S(data_set, 500, sort_fct_2)
     
-    upper_bound = opti.UpperBoundhandler()
-    step_forward = opti.StepForwardHandler()
-    best_solution = opti.UpdateSolutionHandler()
-    back_track = opti.BackTrackHandler()
-    upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track).set_next(step_forward)
-    upper_bound.set_branch(back_track)
-    step_forward.set_branch(upper_bound)
-    step_forward.set_branch_2(step_forward)
-    back_track.set_branch(step_forward)
+    # upper_bound = opti.UpperBoundhandler()
+    # step_forward = opti.StepForwardHandler()
+    # best_solution = opti.UpdateSolutionHandler()
+    # back_track = opti.BackTrackHandler()
+    # upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track).set_next(step_forward)
+    # upper_bound.set_branch(back_track)
+    # step_forward.set_branch(upper_bound)
+    # step_forward.set_branch_2(step_forward)
+    # back_track.set_branch(step_forward)
 
-    print(knapsack(upper_bound))
+    # result = upper_bound.handle(bag)
+    # print(result)
+    # # print(knapsack_1(upper_bound))
+
+    # print(knapsack_2(upper_bound))
     # print(horowitz_sahni_algo(data_set,50))
