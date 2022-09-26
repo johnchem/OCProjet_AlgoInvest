@@ -71,7 +71,7 @@ class UpperBoundhandler(AbstractHandler):
             # cas par defaut et cas ou index = critical_point['index']
             gain_at_critical_point = sum([knap.items[j].roi*knap.items[j].value for j in range(knap.i, critical_point)]) 
             weight_at_critical_point = sum([knap.items[j].value for j in range(knap.i, critical_point)])
-            critical_point_balance = knap.items[critical_point].roi*knap.items[critical_point].value/knap.items[critical_point].value
+            critical_point_balance = knap.items[critical_point].roi
             upper_bound = (gain_at_critical_point + 
                                 floor((knap.res_capacity - weight_at_critical_point)*
                                        critical_point_balance)
@@ -194,8 +194,6 @@ class Knapsack:
 def knapsack_H_S(items, capacity, sort_fct):
     def solve_knapsack(handler):
         result = handler.handle(knapsack)
-        print("zut")
-        print(result)
         return result
     knapsack = Knapsack(items, capacity, sort_fct)
     return solve_knapsack

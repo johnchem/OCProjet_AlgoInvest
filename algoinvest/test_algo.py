@@ -1,4 +1,5 @@
 from pickletools import optimize
+from time import time
 from algoinvest.bruteforce import brute_force_matrice
 from algoinvest.optimized import knapsack_H_S, Knapsack
 from algoinvest.branch_and_bound import branch_and_bound
@@ -118,38 +119,47 @@ def control_set_2():
     return control_data
 
 if __name__ == "__main__":
-    # import sys
-    # sys.setrecursionlimit(1000000)
+    import timeit
+    import sys
+    sys.setrecursionlimit(1000000)
     data_set = dataset_0()
-    #print(branch_and_bound(data_set, 500))  
-    n = len(data_set)
-    capacity = 50
-    value = [x.value for x in data_set]
-    roi = [x.roi*x.value/100 for x in data_set]
-    p_per_weight = [x.roi*x.value/x.value for x in data_set]
+    #print(branch_and_bound(data_set, 500)) 
+    def test_bruteforce():
+        print("\n_______ brute force _______\n")
+        print(brute_force_matrice(data_set))
 
-    print(branch_and_bound(n, value, roi, capacity, p_per_weight))
+    # print(timeit.timeit(test_bruteforce, number=1))
 
-    # sort_fct_1 = lambda x : x.roi*x.roi*x.value
-    # # knapsack_1 = knapsack_H_S(data_set, 500, sort_fct_1)
-    # bag = Knapsack(data_set, 500, sort_fct_1)
+    def test_bb():
+        ds = list(data_set)
+        sort_fct_1 = lambda x : x.roi
+        ds.sort(key=sort_fct_1, reverse=True)
+        print(*ds, sep='\n')
+        n = len(ds)
+        capacity = 500
+        value = [x.value for x in ds]
+        roi = [x.roi*x.value for x in ds]
+        p_per_weight = [x.roi for x in ds]
+        
+        print("\n_______ branch & bound _______\n")
+        result = branch_and_bound(n, roi, value, capacity, p_per_weight)
+        print([ds[x].name for x in result])
+    print(timeit.timeit(test_bb, number=1))
 
-    # # sort_fct_2 = lambda x : x.roi*x.value
-    # # knapsack_2 = knapsack_H_S(data_set, 500, sort_fct_2)
+    def test_HS_bb():
+        sort_fct_1 = lambda x : x.roi
+        knapsack_1 = knapsack_H_S(data_set, 500, sort_fct_1)
     
-    # upper_bound = opti.UpperBoundhandler()
-    # step_forward = opti.StepForwardHandler()
-    # best_solution = opti.UpdateSolutionHandler()
-    # back_track = opti.BackTrackHandler()
-    # upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track).set_next(step_forward)
-    # upper_bound.set_branch(back_track)
-    # step_forward.set_branch(upper_bound)
-    # step_forward.set_branch_2(step_forward)
-    # back_track.set_branch(step_forward)
+        upper_bound = opti.UpperBoundhandler()
+        step_forward = opti.StepForwardHandler()
+        best_solution = opti.UpdateSolutionHandler()
+        back_track = opti.BackTrackHandler()
+        upper_bound.set_next(step_forward).set_next(best_solution).set_next(back_track).set_next(step_forward)
+        upper_bound.set_branch(back_track)
+        step_forward.set_branch(upper_bound)
+        step_forward.set_branch_2(step_forward)
+        back_track.set_branch(step_forward)
 
-    # result = upper_bound.handle(bag)
-    # print(result)
-    # # print(knapsack_1(upper_bound))
-
-    # print(knapsack_2(upper_bound))
-    # print(horowitz_sahni_algo(data_set,50))
+        print("\n_______ H&S branch & bound _______\n")
+        print(knapsack_1(upper_bound))
+    print(timeit.timeit(test_HS_bb, number=1))
