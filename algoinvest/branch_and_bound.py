@@ -1,36 +1,5 @@
-
 # -*- coding: utf-8 -*-
-"""
-Author: Nathan Rice
-0-1 Knapsack Problem using best first branch and bound method 
-Returns maxprofit with list storing the index position of the items in the best solution.
-The profit is maximized while staying under the weight limit.
-This program uses a priority queue to store the nodes ordered by best bound,
-the node with the highest bound value is returned when removing from the priority queue.
-The best first approach arrives at an optimal solition faster than breadth first search.
-"""
-#examples
-# W = 13
-# i  pi  wi pi/wi
-# 1 $20  2   10
-# 2 $30  5   6
-# 3 $35  7   5
-# 4 $12  3   4
-# 5 $3   1   3
-#problem definition
-# n = 5 #items given
-# W = 13 # capacity of knapsack
-# p = [0, 20, 30, 35, 12, 3] # profit of each item (starts with item 0 = $0)
-# w = [0, 2, 5, 7, 3, 1] # weight of each item
-# p_per_weight = [0, 10, 6, 5, 4, 3] #price per weight
 
-#example 6.1
-# items are ordered by price per weight
-# n = 4
-# W = 16
-# p = [40, 30, 50, 10]
-# w = [2, 5, 10, 5]
-# p_per_weight = [20, 6, 5, 2]
 from dataclasses import dataclass, field
 
 class Priority_Queue:
@@ -54,10 +23,6 @@ class Priority_Queue:
             i+=1
         self.pqueue.insert(i,node)
         
-    def insert_bis(self,node):
-        self.pqueue.append(node)
-        self.pqueue.sort(lambda x: x.bound, reverse = True)
-
     def print_pqueue(self):
         for i in list(range(len(self.pqueue))):
             print ("pqueue",i, "=", self.pqueue[i].bound)

@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from importlib.resources import path
 from math import floor
 import copy
 
@@ -62,6 +63,7 @@ class UpperBoundhandler(AbstractHandler):
         return critical_point
     
     def handle(self, knap):
+        # print(f'upper bound {knap}')
         critical_point = self.get_critical_point(knap.items, knap.n, knap.res_capacity, knap.i)
         # gestion du cas où tous les items restant peuvent être mis dans le sac
         if critical_point >= knap.n:
@@ -102,6 +104,7 @@ class StepForwardHandler(AbstractHandler):
         return None
 
     def handle(self, knap):
+        # print(f'step forward {knap}')
         while knap.items[knap.i].value <= knap.res_capacity:
             knap.res_capacity -= knap.items[knap.i].value
             knap.current_sol['gain'] += knap.items[knap.i].roi*knap.items[knap.i].value
@@ -131,29 +134,38 @@ class StepForwardHandler(AbstractHandler):
 
 class UpdateSolutionHandler(AbstractHandler):
     def handle(self, knap):
+        print(f'update solution {knap}')
         # node({'current exploration':knap.current_sol["path"], 
         #              'current gain':round(knap.current_sol["gain"])}
         #             )
         # print(f'current gain {round(current_solution["gain"])}')
-        if knap.current_sol['gain'] > knap.best_sol['gain']:
-            knap.best_sol = copy.deepcopy(knap.current_sol)
-            # print(f'nouvelle solution {knap.best_sol["gain"]} {knap.best_sol["path"]}')
-        # else:
-            # print(f'solution alternative {knap.current_sol["gain"]} {knap.current_sol["path"]}')
-        # reinitialisation de l'index
-        knap.i = knap.n-1
+        try:
+            if knap.current_sol['gain'] > knap.best_sol['gain']:
+                knap.best_sol = copy.deepcopy(knap.current_sol)
+                # print(f'nouvelle solution {knap.best_sol["gain"]} {knap.best_sol["path"]}')
+            # else:
+                # print(f'solution alternative {knap.current_sol["gain"]} {knap.current_sol["path"]}')
+            # reinitialisation de l'index
+            print('point 1')
+            knap.i = knap.n-1
 
-        # si le dernier objet est mis dans le sac, mise a jour de la valeur 
-        # et passage dans path[-1] == 0 pour permettre le back-tracking
-        if knap.current_sol['path'][-1]:
-            knap.res_capacity += knap.items[-1].value
-            knap.current_sol['gain'] -= knap.items[-1].roi*knap.items[-1].value
-            knap.current_sol['path'][-1] = 0
-        return self._next_handler.handle(knap)
+            # si le dernier objet est mis dans le sac, mise a jour de la valeur 
+            # et passage dans path[-1] == 0 pour permettre le back-tracking
+            if knap.current_sol['path'][-1]:
+                print('point 2')
+                knap.res_capacity += knap.items[-1].value
+                knap.current_sol['gain'] -= knap.items[-1].roi*knap.items[-1].value
+                knap.current_sol['path'][-1] = 0
+            return self._next_handler.handle(knap)
+        except BaseException as err:
+            print(err)
+        except:
+            print("c'est la merde")
 
 
 class BackTrackHandler(AbstractHandler):
     def handle(self, knap):
+        # print(f'back track {knap}')
         backtrack_index = max([i for i,x in enumerate(knap.current_sol['path']) if x==1])
         if not backtrack_index:
             return knap.best_sol
@@ -171,31 +183,39 @@ class BackTrackHandler(AbstractHandler):
         knap.i = backtrack_index + 1
         return self._next_handler.handle(knap)
 
-
-@dataclass
 class Knapsack:
-    node_i = 0
-    i = 0
     
     def __init__(self, items, capacity, sort_fct=None):
+        self.node_i = 0
+        self.i = 0
+        
         self._items = items
         self.items = list(items)
         self.items.sort(key=sort_fct, reverse = True)
+    
         # print(*items, sep="\n")
-        # print(" ")
         # print(*self.items, sep="\n")
         self.n = len(items)
 
         self.best_sol = {'gain':0 ,'path':[None]*self.n}
         self.current_sol = {'gain':0 ,'path':[None]*self.n}
         self.res_capacity = capacity
+
+    def __repr__(self) -> str:
+        display = [f'best solution {round(self.best_sol["gain"],2)} {self.best_sol["path"]}',
+                f'current solution {self.current_sol["path"]}',
+                f'residual {self.res_capacity}']
+        return '\n'.join(display)
         
 
 def knapsack_H_S(items, capacity, sort_fct):
+    knapsack = Knapsack(items, capacity, sort_fct)
+    print(f'outside fct {knapsack}')
+    
     def solve_knapsack(handler):
+        print(f'inside fct {knapsack}')
         result = handler.handle(knapsack)
         return result
-    knapsack = Knapsack(items, capacity, sort_fct)
     return solve_knapsack
 
 
