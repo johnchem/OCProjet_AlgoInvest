@@ -1,10 +1,6 @@
-from pickletools import optimize
-from time import time
 from algoinvest.bruteforce import brute_force_matrice
-from algoinvest.optimized import knapsack_H_S, Knapsack
-from algoinvest.branch_and_bound import branch_and_bound
-from bruteforce import brute_force
-import algoinvest.optimized as opti
+from algoinvest.optimized import branch_and_bound
+# from algoinvest.knapsack_H_S import knapsack_H_S, Knapsack
 
 from pathlib import Path
 from collections import namedtuple
@@ -14,54 +10,38 @@ import csv
 #define testing constant
 DATA_SET_FOLDER = Path("algoinvest/dataset")
 
-def test_bruteforce(dataset_0, control_set_1):
-    analysis = brute_force_matrice(dataset_0)
-    # shares = analysis["shares"]
-    cost = analysis["cost"]
-    roi = analysis["roi"]
+def test_bruteforce(dataset_0):
+    capacity = 500
+    shares, cost, roi = brute_force_matrice(dataset_0, capacity)
+    output_string = f'actions \n {" ".join(shares)} \n coût {cost} gain total {roi}'
+    print(output_string)
 
-    assert cost <= control_set_1['cost']
-    assert roi >= control_set_1['roi']
+    assert cost <= capacity
 
 def test_branch_and_bound_set_1(dataset_1, control_set_1):
-    sort_fct_1 = lambda x : x.roi
-    dataset_1.sort(key=sort_fct_1, reverse=True)
-    n = len(dataset_1)
+    sort_fct = lambda x : x.roi
     capacity = 500
-    value = [x.value for x in dataset_1]
-    roi = [x.roi*x.value for x in dataset_1]
-    p_per_weight = [x.roi for x in dataset_1]
-        
-    result = branch_and_bound(n, roi, value, capacity, p_per_weight)
-    print([dataset_1[x].name for x in result])
+    shares, cost, roi = branch_and_bound(dataset_1, capacity, sort_fct)
+    output_string = f'actions {shares} \n coût {cost} gain total {roi}'
+    print(output_string)
 
-    shares, cost, roi = branch_and_bound(dataset_1)
-    
-    assert cost <= control_set_1['cost']
-    assert roi >= control_set_1['roi']
+    assert cost <= capacity
+    assert roi >= float(control_set_1['roi'])
 
 def test_branch_and_bound_set_2(dataset_2, control_set_2):
     sort_fct = lambda x : x.roi
-    dataset_2.sort(key=sort_fct, reverse=True)
-    n = len(dataset_2)
     capacity = 500
-    value = [x.value for x in dataset_2]
-    roi = [x.roi*x.value for x in dataset_2]
-    p_per_weight = [x.roi for x in dataset_2]
-        
-    result = branch_and_bound(n, roi, value, capacity, p_per_weight)
-    print([dataset_2[x].name for x in result])
+    shares, cost, roi = branch_and_bound(dataset_2, capacity, sort_fct)
+    output_string = f'actions {shares} \n coût {cost} gain total {roi}'
+    print(output_string)
 
-    shares, cost, roi = branch_and_bound(dataset_1)
-    
-    assert cost <= control_set_2['cost']
-    assert roi >= control_set_2['roi']
-
+    assert cost <= capacity
+    assert roi >= float(control_set_2['roi'])
 
 """
 define the fixture
 """
-
+@pytest.fixture
 def dataset_0():
     FILE_NAME = DATA_SET_FOLDER/'dataset_0.csv'
     
@@ -83,8 +63,7 @@ def dataset_0_bis():
     return testing_data
 
 
-
-# @pytest.fixture
+@pytest.fixture
 def dataset_1():
     FILE_NAME = DATA_SET_FOLDER/'dataset1_Python+P7.csv'
     
@@ -108,7 +87,7 @@ def dataset_2():
 
 
 # @pytest.fixture
-def control_set_1():
+def control_set_2():
     FILE_NAME = DATA_SET_FOLDER/'control_dataset1.csv'
 
     with open(FILE_NAME, newline='') as f:
