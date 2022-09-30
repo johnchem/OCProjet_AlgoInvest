@@ -24,8 +24,6 @@ def brute_force_matrice(market, capacity):
                 roi_max = total_roi
                 total_cost = cost
                 best_investment = [action for action in investment]
-    print(f"benefice maximal {roi_max}")
-    print(f"cout de l'achat {total_cost}")
     return best_investment, round(total_cost, 2), round(roi_max, 2)
 
 if __name__ == '__main__':

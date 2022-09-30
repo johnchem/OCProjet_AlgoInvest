@@ -72,8 +72,8 @@ def branch_and_bound(dataset, capacity, sort_fct):
     dataset.sort(key=sort_fct, reverse=True)
     
     n = len(dataset)
-    price = [x.value for x in dataset]
-    weight = [x.roi*x.value for x in dataset]
+    weight = [x.value for x in dataset]
+    price = [x.roi*x.value for x in dataset]
     p_per_weight = [x.roi for x in dataset]
     
     nodes_generated = 0
@@ -121,7 +121,7 @@ def branch_and_bound(dataset, capacity, sort_fct):
             if neg_node.bound > roi_max:
                 pq.insert(neg_node)
 
-    best_investment = [dataset[x].name for x in best_investment]
+    best_investment = [dataset[x] for x in best_investment]
     # print("\nEND maxprofit = ", roi_max, "nodes generated = ", nodes_generated)
     # print("bestitems = ", best_investment)
     return best_investment, round(total_cost, 2), round(roi_max, 2)
