@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
 from dataclasses import dataclass, field
 from turtle import pos
 
@@ -24,9 +25,9 @@ class Priority_Queue:
             i+=1
         self.pqueue.insert(i,node)
         
-    def print_pqueue(self):
-        for i in list(range(len(self.pqueue))):
-            print ("pqueue",i, "=", self.pqueue[i].bound)
+    def __repr__(self):
+        return "pqueue \n" + "\n".join([str(round(x.bound,2)) for x in self.pqueue])
+        
                     
     def remove(self):
         try:
@@ -49,6 +50,10 @@ class Node:
         self.profit = profit
         self.weight = weight
         self.items = items
+
+    def __repr__(self):
+        return (f'branche : {" ".join([str(x) for x in self.items])}\n' +
+                f'level : {self.level} profit : {round(self.profit,2)} cout : {self.weight}')
         
             
 def get_bound(node, n, price, weight, capacity, p_per_weight):
@@ -69,6 +74,9 @@ def get_bound(node, n, price, weight, capacity, p_per_weight):
 
 
 def branch_and_bound(dataset, capacity, sort_fct):
+    '''
+    
+    '''
     dataset.sort(key=sort_fct, reverse=True)
     
     n = len(dataset)
@@ -88,8 +96,9 @@ def branch_and_bound(dataset, capacity, sort_fct):
     pq.insert(current_node)
 
     while pq.length != 0:
-        
+        # print(pq)
         current_node = pq.remove() #remove node with best bound
+        print(f'\ncurrent_node : \n{current_node}')
 
         if current_node.bound > roi_max: #check if node is still promising
             #set u to the child that includes the next item
@@ -99,6 +108,7 @@ def branch_and_bound(dataset, capacity, sort_fct):
                             items = []
                             )
             nodes_generated+=1
+            print(f'\npos_node : \n{pos_node}')
             #create u's list from v's list and add the new item
             pos_node.items = current_node.items.copy() + [pos_node.level]
             if pos_node.weight <= capacity and pos_node.profit > roi_max: 
@@ -110,15 +120,18 @@ def branch_and_bound(dataset, capacity, sort_fct):
             # print(f'pos_node : {pos_node}')       
 
             if pos_node.bound > roi_max:
+                print('pos_node dans la file')
                 pq.insert(pos_node)
 
             #set u to the child that does not include the next item
             neg_node = Node(pos_node.level, current_node.profit, current_node.weight, current_node.items.copy())
             nodes_generated+=1
             neg_node.bound = get_bound(neg_node, n, price, weight, capacity, p_per_weight)
+            print(f'\nneg_node : \n{neg_node}')
             # print(f'neg_node : {neg_node}')
 
             if neg_node.bound > roi_max:
+                print('neg_node dans la file')
                 pq.insert(neg_node)
 
     best_investment = [dataset[x] for x in best_investment]
@@ -127,4 +140,15 @@ def branch_and_bound(dataset, capacity, sort_fct):
     return best_investment, round(total_cost, 2), round(roi_max, 2)
 
 if __name__ == "__main__":
-    pass
+    share = namedtuple('share',('name', 'value', 'roi'))
+    raw_set = [['Share-DUPH',"10.01","12.25"],
+               ['Share-GTAN',"26.04","38.06"],
+               ['Share-USUF',"9.25","27.69"],
+               ['Share-CFOZ',"10.64","38.21"]
+            ]
+    dataset = [share(name=name.strip(),value=float(value),roi=float(roi)/100) for name, value, roi in raw_set if float(value)>0]
+    
+    sort_fct = lambda x : x.roi
+    capacity = 40
+    shares, cost, roi = branch_and_bound(dataset, capacity, sort_fct)
+    print(f'{shares}\ncout: {cost} gain : {roi}')
