@@ -1,0 +1,58 @@
+
+current_node : 
+branche : 
+level : -1 profit : 0 cout : 0
+
+pos_node : 
+branche : 
+level : 0 profit : 4.07 cout : 10.64
+pos_node dans la file
+
+neg_node : 
+branche : 
+level : 0 profit : 0 cout : 0
+neg_node dans la file
+
+current_node : 
+branche : 0
+level : 0 profit : 4.07 cout : 10.64
+
+pos_node : 
+branche : 
+level : 1 profit : 13.98 cout : 36.68
+pos_node dans la file
+
+neg_node : 
+branche : 0
+level : 1 profit : 4.07 cout : 10.64
+
+current_node : 
+branche : 0 1
+level : 1 profit : 13.98 cout : 36.68
+
+pos_node : 
+branche : 
+level : 2 profit : 16.54 cout : 45.93
+
+neg_node : 
+branche : 0 1
+level : 2 profit : 13.98 cout : 36.68
+neg_node dans la file
+
+current_node : 
+branche : 0 1
+level : 2 profit : 13.98 cout : 36.68
+
+pos_node : 
+branche : 
+level : 3 profit : 15.2 cout : 46.69
+
+neg_node : 
+branche : 0 1
+level : 3 profit : 13.98 cout : 36.68
+
+current_node : 
+branche : 
+level : 0 profit : 0 cout : 0
+[share(name='Share-CFOZ', value=10.64, roi=0.3821), share(name='Share-GTAN', value=26.04, roi=0.38060000000000005)]
+cout: 36.68 gain : 13.98

@@ -33,7 +33,7 @@ def test_branch_and_bound_set_1(dataset_1, control_set_1, benchmark):
     shares, cost, roi = benchmark(branch_and_bound, dataset_1, capacity, sort_fct)
     
     shares_list = [(x.name, x.value, x.roi) for x in shares]
-    output_string = f'actions {shares_list} \n coût {cost} gain total {roi}'
+    output_string = f'actions \n {" ".join(shares_list)} \n coût {cost} gain total {roi}'
     print(output_string)
 
     assert cost <= capacity
@@ -45,8 +45,8 @@ def test_branch_and_bound_set_2(dataset_2, control_set_2, benchmark):
     capacity = 500
     shares, cost, roi = benchmark(branch_and_bound, dataset_2, capacity, sort_fct)
     
-    shares_list = [x.name for x in shares]
-    output_string = f'actions {shares_list} \n coût {cost} gain total {roi}'
+    shares_list = [(x.name, x.value, x.roi) for x in shares]
+    output_string = f'actions \n {" ".join(shares_list)} \n coût {cost} gain total {roi}'
     print(output_string)
 
     assert cost <= capacity

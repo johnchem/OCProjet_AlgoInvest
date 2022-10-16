@@ -10,6 +10,8 @@ pytest = "^7.1.2"
 memory-profiler = "^0.60.0"
 tqdm = "^4.64.1"
 pytest-benchmark = "^3.4.1"
+pydot = "^1.4.2"
+graphviz = "^0.20.1"
 
 [tool.poetry.dev-dependencies]
 black = {version = "^22.6.0", allow-prereleases = true}
